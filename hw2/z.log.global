@@ -1,0 +1,18 @@
+** compiled at:     Sep 28 2023 15:06:48
+** execution start: 2023-10-24 20:59:12:671861
+graph.cpp:initParameters:1491(3) opening config file 'rai.cfg'
+graph.cpp:initParameters:1498(3)  - failed
+graph.cpp:initParameters:1504(3) opening base config file '/root/local/rai/../local.cfg'
+graph.cpp:initParameters:1510(3)  - failed
+util.cpp:cd_start:1029(3) entering path '/home/alper/hw2'
+util.cpp:getIs:1066(3) opening input file 'cargobot_base.g'
+util.cpp:cd_start:1029(3) entering path '/home/alper/hw2'
+util.cpp:cd_start:1029(3) entering path '/home/alper/hw2'
+util.cpp:getIs:1066(3) opening input file 'maze.g'
+util.cpp:cd_start:1029(3) entering path '/home/alper/hw2'
+util.cpp:cd_start:1029(3) entering path '/home/alper/hw2'
+util.cpp:getIs:1066(3) opening input file 'cargobot_base.g'
+util.cpp:cd_start:1029(3) entering path '/home/alper/hw2'
+util.cpp:cd_start:1029(3) entering path '/home/alper/hw2'
+util.cpp:getIs:1066(3) opening input file 'maze.g'
+util.cpp:cd_start:1029(3) entering path '/home/alper/hw2'

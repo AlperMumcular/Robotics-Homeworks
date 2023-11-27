@@ -4,6 +4,7 @@ env = gymnasium.make('gym_examples/DangerousDave-v0')
 env.reset()
 
 for i in range(10000):
+    
     env.render()
     print("a")
     

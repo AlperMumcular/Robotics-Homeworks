@@ -55,13 +55,13 @@ def graphicPropertiesFromFilename(filename):
 ################
 
 def pygame_image_load(tilepath):
-	return pygame.image.load( "/home/alper/gym-examples/gym_examples/envs/" + tilepath).convert_alpha()
+	return pygame.image.load( "/home/ece/gym_ex/gym_examples/envs/" + tilepath).convert_alpha()
 	
 def convert_tuples_to_dict(list_of_tuples):
     return {tuple[0] : tuple[1:] for tuple in list_of_tuples}
 	
 def list_tiles(folder):
-    return listdir("/home/alper/gym-examples/gym_examples/envs/" + folder)
+    return listdir("/home/ece/gym_ex/gym_examples/envs/" + folder)
     
 def save_tile(tile, folder):
     return (graphicPropertiesFromFilename(tile)[0], pygame_image_load(folder + tile), graphicPropertiesFromFilename(tile)[1:][0], graphicPropertiesFromFilename(tile)[1:][1:][0])

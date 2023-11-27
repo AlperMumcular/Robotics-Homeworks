@@ -447,7 +447,7 @@ class Map(object):
     
     def buildLevel(self, level_number):
         #open the level in the txt
-        textmap = open( "/home/alper/gym-examples/gym_examples/envs/" + "levels/" + str(level_number) + ".txt", 'r')
+        textmap = open( "/home/ece/gym_ex/gym_examples/envs/" + "levels/" + str(level_number) + ".txt", 'r')
 
         #get height (must reset offset)
         self.height = len(textmap.readlines())
@@ -1407,6 +1407,8 @@ class Player(Dynamic):
         elif self.cur_state == STATE.BLINK:
             self.gfx_id = self.animator.blink()
         ## Process animation: END
+
+        #print (player_newx, player_newy)
         
         return (player_newx, player_newy)
         

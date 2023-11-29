@@ -1,7 +1,7 @@
 import math
 
-from .classes import *
-from .functional import *
+from classes import *
+from functional import *
 
 def getBonusMapping(current_level):
     if current_level == 2:

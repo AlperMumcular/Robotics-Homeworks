@@ -2,7 +2,7 @@ import gym
 from gym import spaces
 import pygame
 import numpy as np
-from . import main_fun
+# from . import main_fun
 from typing import TYPE_CHECKING, Optional
 from .classes import *
 from .functional import *
@@ -10,23 +10,11 @@ from .functional import *
 
 #x, y = Player.updateLocation()
 
-class Action(Enum):
-    RIGHT = 0
-    UP = 1
-    LEFT = 2
-    DOWN = 3
-    JETPACK = 4
-    UP_LEFT = 5
-    UP_RIGHT = 6
-    DOWN_LEFT = 7
-    DOWN_RIGHT = 8
-    IDLE = 9
-
 class DangerousDaveEnv(gym.Env):
-    def __init__(self, render_mode: Optional[str] = None):
+    def __init__(self, step_limit, render_mode = None):
 
-        self.agent = Player()
-        self._agent_location = np.array([0.0, 0.0]).astype(np.float32)
+        # self.agent = Player()
+        # self._agent_location = np.array([0.0, 0.0]).astype(np.float32)
 
 
         self.observation_space = spaces.Dict(
@@ -43,16 +31,169 @@ class DangerousDaveEnv(gym.Env):
         # We have 4 actions, corresponding to "right", "up", "left", "down", "right"
         self.action_space = spaces.Discrete(10)
 
-        
+        # env constructor variables
+        self.render_mode = render_mode
+        self.step_limit = step_limit
+        self.steps = 0
+
+        # Init tiles
+        self.tileset, self.ui_tileset = None, None
+        self.game_open = True
+        self.game_screen = None
+
+        # Init a player
+        self.GamePlayer = Player()
+
+        # Init level and spawner
+        self.current_level_number = 1
+        self.current_spawner_id = 0
+
+        # Available Keys
+        self.movement_keys = [pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_DOWN]
+        self.inv_keys = [pygame.K_LCTRL, pygame.K_RCTRL, pygame.K_LALT, pygame.K_RALT]
+
+        # Game processing
+        self.ended_game = False
+        self.ended_level = False
+        self.Level = Map(self.current_level_number)
+        (self.player_position_x, self.player_position_y) = self.Level.initPlayerPositions(self.current_spawner_id, self.GamePlayer)
+        self.clock = None
+        self.jetpack_ui = False
     
     def reset(self, seed=None, options=None):
-        pass
+        super().reset(seed=seed)
+
+        ##Init a player
+        self.GamePlayer = Player()
+
+        self.ended_game = False
+        self.ended_level = False
+        (self.player_position_x, self.player_position_y) = self.Level.initPlayerPositions(self.current_spawner_id, self.GamePlayer)
+        self.clock = None
+
+        observation = {
+            "agent": np.array([0.1, 0.1]),  # replace agent_x and agent_y with actual values
+            "target": np.array([0.2, 0.2]),  # replace target_x and target_y with actual values
+            "trophy": np.array([0.3, 0.3]),  # replace trophy_x and trophy_y with actual values
+            "trophy_taken": 0.5,  # replace with the actual trophy_taken value
+            "jetpack_taken": 0.5,  # replace with the actual jetpack_taken value
+            "jetpack_duration": 0.5,  # replace with the actual jetpack_duration value
+        }
+
+        info = dict()
+
+        return observation, info
+
     def step(self, action):
-        #print(  )
-        pass
-    def render(self):
-        #if self.render_mode == "human":        
-        main_fun.main()
+        self.steps+=1
+        terminated = False
+        oldScore = self.GamePlayer.getScore()
         
+        if action == 0: # idle
+            key_map = [0, 0, 0, 0]
+            self.GamePlayer.movementInput(key_map)
+            # print(self.GamePlayer.getCurrentState(), self.GamePlayer.getDirectionX())
+
+        elif action == 1: # up
+            key_map = [1, 0, 0, 0]
+            self.GamePlayer.movementInput(key_map)
+            # print(self.GamePlayer.getCurrentState(), self.GamePlayer.getDirectionX())
+
+        elif action == 2: # left
+            key_map = [0, 1, 0, 0]
+            self.GamePlayer.movementInput(key_map)
+            # print(self.GamePlayer.getCurrentState(), self.GamePlayer.getDirectionX())
+
+        elif action == 3: # right
+            key_map = [0, 0, 1, 0]
+            self.GamePlayer.movementInput(key_map)
+            # print(self.GamePlayer.getCurrentState(), self.GamePlayer.getDirectionX())
+
+        elif action == 4: # down
+            key_map = [0, 0, 0, 1]
+            self.GamePlayer.movementInput(key_map)
+            # print(self.GamePlayer.getCurrentState(), self.GamePlayer.getDirectionX())
+            
+        elif action == 5: # use jetpack
+            if self.jetpack_ui == False and self.GamePlayer.inventory["jetpack"] > 0:
+                self.jetpack_ui == True
+            else:
+                self.jetpack_ui == False
+
+            self.GamePlayer.inventoryInput(0)
+            # print(self.GamePlayer.getCurrentState(), self.GamePlayer.getDirectionX())
+
+        
+        if self.render_mode == "human":
+            self.render()
+        else:
+            (self.player_position_x, self.player_position_y) = self.GamePlayer.updatePosition(self.player_position_x,
+                                                                                    self.player_position_y, self.Level,
+                                                                                    SCREEN_HEIGHT)
+
+        if self.GamePlayer.getCurrentState() == STATE.ENDMAP:
+            terminated = True
+
+        observation = {
+            "agent": np.array([0.1, 0.1]),  # replace agent_x and agent_y with actual values
+            "target": np.array([0.2, 0.2]),  # replace target_x and target_y with actual values
+            "trophy": np.array([0.3, 0.3]),  # replace trophy_x and trophy_y with actual values
+            "trophy_taken": 0.5,  # replace with the actual trophy_taken value
+            "jetpack_taken": 0.5,  # replace with the actual jetpack_taken value
+            "jetpack_duration": 0.5,  # replace with the actual jetpack_duration value
+        }
+
+        newScore = self.GamePlayer.getScore()
+        reward = newScore - oldScore
+        return observation, reward, terminated, self.steps==self.step_limit, dict()
+
+    def render(self):
+        if self.game_screen is None:
+            pygame.init()
+            self.game_screen = Screen(SCREEN_WIDTH, SCREEN_HEIGHT)
+
+            ##Init tiles
+            self.tileset, self.ui_tileset = load_all_tiles()
+            self.game_open = True
+
+        if self.clock is None:
+            self.clock = pygame.time.Clock()
+
+        if self.game_open:
+            # self.GamePlayer = Player()
+
+            ##Init level and spawner
+            self.current_level_number = 1
+            self.current_spawner_id = 0
+
+            pygame.display.update()
+                
+            if self.GamePlayer.getCurrentState() != STATE.DESTROY:
+                (self.player_position_x, self.player_position_y) = self.GamePlayer.updatePosition(self.player_position_x,
+                                                                                    self.player_position_y, self.Level,
+                                                                                    self.game_screen.getUnscaledHeight())
+                                                                                    
+
+            spawner_pos_x = self.Level.getPlayerSpawnerPosition(self.current_spawner_id)[0]
+            self.game_screen.setXPosition(spawner_pos_x - 10, self.Level.getWidth())
+
+            self.game_screen.printMap(self.Level, self.tileset)
+            self.game_screen.printPlayer(self.GamePlayer,
+                                        self.player_position_x - self.game_screen.getXPositionInPixelsUnscaled(),
+                                        self.player_position_y, self.tileset)
+            self.game_screen.printOverlays(self.ui_tileset)
+            self.game_screen.printUi(self.ui_tileset, self.GamePlayer, self.current_level_number)
+
+            if self.GamePlayer.inventory["jetpack"] > 0 or self.jetpack_ui :
+                self.game_screen.updateUiJetpack(self.ui_tileset, self.GamePlayer.inventory["jetpack"])
+                
+            if self.GamePlayer.inventory["trophy"] == 1:
+                self.game_screen.updateUiTrophy(self.ui_tileset)
+
+            self.clock.tick(200)
+
     def close(self):
-        pass     
+        if self.game_screen is not None:
+            print("called close :D")
+            pygame.quit()
+            quit()

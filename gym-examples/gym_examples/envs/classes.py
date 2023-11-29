@@ -1198,7 +1198,7 @@ class Player(Dynamic):
                 # fall off tree (by the bottom)
                 if self.cur_state == STATE.CLIMB and self.inventory["tree"] == 0:
                     self.setCurrentState(STATE.FALL)
-                    self.velocity_y = self.MAX_SPEED_Y                    
+                    self.velocity_y = self.MAX_SPEED_Y   
 
     def inventoryInput(self, key):
         # ignore states that don't interact with the level

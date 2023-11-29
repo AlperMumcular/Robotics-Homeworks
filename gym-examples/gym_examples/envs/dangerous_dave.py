@@ -6,8 +6,6 @@ import numpy as np
 from typing import TYPE_CHECKING, Optional
 from .classes import *
 from .functional import *
-
-
 #x, y = Player.updateLocation()
 
 class DangerousDaveEnv(gym.Env):
@@ -16,17 +14,27 @@ class DangerousDaveEnv(gym.Env):
         # self.agent = Player()
         # self._agent_location = np.array([0.0, 0.0]).astype(np.float32)
 
-
         self.observation_space = spaces.Dict(
             {
-                "agent": spaces.Box(np.array([0.0, 0.0]), np.array([SCREEN_WIDTH-1*1.0, SCREEN_HEIGHT-1*1.0]), shape=(2,), dtype=np.float32),
-                "target": spaces.Box(np.array([0.0, 0.0]), np.array([SCREEN_WIDTH-1*1.0, SCREEN_HEIGHT-1*1.0]), shape=(2,), dtype=np.float32),
-                "trophy": spaces.Box(np.array([0.0, 0.0]), np.array([SCREEN_WIDTH-1*1.0, SCREEN_HEIGHT-1*1.0]), shape=(2,), dtype=np.float32),
-                "trophy_taken": spaces.Box(-0.0, 1.0, shape=(2,), dtype=np.float32),
-                "jetpack_taken": spaces.Box(-0.0, 1.0, shape=(2,), dtype=np.float32),
-                "jetpack_duration": spaces.Box(-0.0, 1.0, shape=(2,), dtype=np.float32),
+                "agent_x": spaces.Box(0,288, shape=(1,), dtype=np.float32),
+                "agent_y": spaces.Box(32,144, shape=(1,), dtype=np.float32),
+                "trophy_x": spaces.Box(176,176, shape=(1,), dtype=np.float32),
+                "trophy_y": spaces.Box(48,48, shape=(1,), dtype=np.float32),
+                "door_x": spaces.Box(192,192, shape=(1,), dtype=np.float32),
+                "door_y": spaces.Box(144,144, shape=(1,), dtype=np.float32),
             }
         )
+
+        #self.observation_space = spaces.Dict(
+        #    {
+        #        "agent": spaces.Box(np.array([0.0, 0.0]), np.array([SCREEN_WIDTH-1*1.0, SCREEN_HEIGHT-1*1.0]), shape=(2,), dtype=np.float32),
+        #        "target": spaces.Box(np.array([0.0, 0.0]), np.array([SCREEN_WIDTH-1*1.0, SCREEN_HEIGHT-1*1.0]), shape=(2,), dtype=np.float32),
+        #        "trophy": spaces.Box(np.array([0.0, 0.0]), np.array([SCREEN_WIDTH-1*1.0, SCREEN_HEIGHT-1*1.0]), shape=(2,), dtype=np.float32),
+        #        "trophy_taken": spaces.Box(-0.0, 1.0, shape=(2,), dtype=np.float32),
+        #        "jetpack_taken": spaces.Box(-0.0, 1.0, shape=(2,), dtype=np.float32),
+        #        "jetpack_duration": spaces.Box(-0.0, 1.0, shape=(2,), dtype=np.float32),
+        #    }
+        #)
 
         # We have 4 actions, corresponding to "right", "up", "left", "down", "right"
         self.action_space = spaces.Discrete(10)
@@ -68,16 +76,20 @@ class DangerousDaveEnv(gym.Env):
 
         self.ended_game = False
         self.ended_level = False
+        self.Level = Map(self.current_level_number)
         (self.player_position_x, self.player_position_y) = self.Level.initPlayerPositions(self.current_spawner_id, self.GamePlayer)
         self.clock = None
 
+        self.steps = 0
+        self.jetpack_ui = False
+
         observation = {
-            "agent": np.array([0.1, 0.1]),  # replace agent_x and agent_y with actual values
-            "target": np.array([0.2, 0.2]),  # replace target_x and target_y with actual values
-            "trophy": np.array([0.3, 0.3]),  # replace trophy_x and trophy_y with actual values
-            "trophy_taken": 0.5,  # replace with the actual trophy_taken value
-            "jetpack_taken": 0.5,  # replace with the actual jetpack_taken value
-            "jetpack_duration": 0.5,  # replace with the actual jetpack_duration value
+                "agent_x": 32,
+                "agent_y": 144,
+                "trophy_x": 176,
+                "trophy_y": 48,
+                "door_x": 192,
+                "door_y": 144,
         }
 
         info = dict()
@@ -130,17 +142,17 @@ class DangerousDaveEnv(gym.Env):
             (self.player_position_x, self.player_position_y) = self.GamePlayer.updatePosition(self.player_position_x,
                                                                                     self.player_position_y, self.Level,
                                                                                     SCREEN_HEIGHT)
-
+        
         if self.GamePlayer.getCurrentState() == STATE.ENDMAP:
             terminated = True
 
         observation = {
-            "agent": np.array([0.1, 0.1]),  # replace agent_x and agent_y with actual values
-            "target": np.array([0.2, 0.2]),  # replace target_x and target_y with actual values
-            "trophy": np.array([0.3, 0.3]),  # replace trophy_x and trophy_y with actual values
-            "trophy_taken": 0.5,  # replace with the actual trophy_taken value
-            "jetpack_taken": 0.5,  # replace with the actual jetpack_taken value
-            "jetpack_duration": 0.5,  # replace with the actual jetpack_duration value
+                "agent_x": self.player_position_x,
+                "agent_y": self.player_position_y,
+                "trophy_x": 176,
+                "trophy_y": 48,
+                "door_x": 192,
+                "door_y": 144,
         }
 
         newScore = self.GamePlayer.getScore()

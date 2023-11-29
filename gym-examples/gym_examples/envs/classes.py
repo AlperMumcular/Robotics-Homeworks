@@ -447,7 +447,7 @@ class Map(object):
     
     def buildLevel(self, level_number):
         #open the level in the txt
-        textmap = open( "/home/ece/gym_ex/gym_examples/envs/" + "levels/" + str(level_number) + ".txt", 'r')
+        textmap = open( "/home/alper/Robotics-Homeworks/gym-examples/gym_examples/envs/" + "levels/" + str(level_number) + ".txt", 'r')
 
         #get height (must reset offset)
         self.height = len(textmap.readlines())
@@ -459,6 +459,8 @@ class Map(object):
         
         #allocate matrix
         self.buildMapMatrix()
+
+        
 
         #for each node, set it accordingly
         for y, line in enumerate(textmap.readlines()):

@@ -124,6 +124,7 @@ def main():
                     (player_position_x, player_position_y) = GamePlayer.updatePosition(player_position_x,
                                                                                        player_position_y, Level,
                                                                                        game_screen.getUnscaledHeight())
+                    print((player_position_x, player_position_y))
                 #print(Level.getNode(11,3))
                 # update friendly shot position, if there is one
                 if friendly_shot:

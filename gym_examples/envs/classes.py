@@ -212,6 +212,7 @@ class Screen(object):
         self.updateUiDaves(player.getLives(), ui_tileset)
 
     def updateUiScore(self, score, ui_tileset):
+        score = abs(score)
         #score text
         score_text = Scenery("scoretext", 0)
         self.printTile(0, 0, score_text.getGraphic(ui_tileset))
@@ -219,6 +220,7 @@ class Screen(object):
         #score amount
         numbers = Scenery("numbers", 0)
         leadingzeroes_score = str(score).zfill(5)
+        #numbers.setGfxId(int(leadingzeroes_score[digit]))            
         for digit in range(5):
             numbers.setGfxId(int(leadingzeroes_score[digit]))            
             self.printTile(60 + 8 * digit, 0, numbers.getGraphic(ui_tileset))
@@ -1108,12 +1110,12 @@ class Player(Dynamic):
     Constants
     '''
 
-    MAX_SPEED_X = 0.6 
-    MAX_SPEED_Y = 0.6
-    X_SPEED_FACTOR = 0.75   #factor to be used when not falling (x speed only hits its maximum when falling)
+    MAX_SPEED_X = 1 
+    MAX_SPEED_Y = 1
+    X_SPEED_FACTOR = 1   #factor to be used when not falling (x speed only hits its maximum when falling)
     
-    JUMP_SPEED = 0.8
-    GRAVITY = 0.01          #gravity acceleration
+    JUMP_SPEED = 1
+    GRAVITY = 0          #gravity acceleration
     
     MAX_LIVES = 5
 
@@ -1135,6 +1137,7 @@ class Player(Dynamic):
             self.score = 0
             self.lives = 3
             self.animator = PlayerAnimator()
+            self.jumpCount = 0
         else: ErrorInvalidConstructor()
 
     '''
@@ -1182,7 +1185,7 @@ class Player(Dynamic):
                 self.velocity_x = self.MAX_SPEED_X * self.X_SPEED_FACTOR
             # fall (can be uncontrolled)
             elif self.cur_state == STATE.FALL:
-                self.velocity_x = self.MAX_SPEED_X #when falling, velocity increases to the max
+                self.velocity_x = self.MAX_SPEED_X * self.X_SPEED_FACTOR #when falling, velocity increases to the max
                 
             # set walking state if in initial state
             if self.cur_state == STATE.BLINK:
@@ -1237,9 +1240,17 @@ class Player(Dynamic):
     def applyGravityOnJump(self):
         # Jumping is basically a velocity spike with a gravity based decay. This is basically calculating the decay at each frame.
         self.addVelocityY(self.GRAVITY) 
+        self.jumpCount +=1
+        if self.jumpCount == 32:
+            #self.addVelocityY(1) 
+            self.velocity_y=0
+            self.setFallingState()
+            
+            self.jumpCount = 0
+            
         
-        if self.velocity_y == self.MAX_SPEED_Y:
-            self.setFallingState()      
+        #if self.velocity_y == self.MAX_SPEED_Y:
+                  
         
     def setFallingState(self):
         self.setCurrentState(STATE.FALL)
@@ -1305,8 +1316,8 @@ class Player(Dynamic):
         if self.cur_state in [STATE.JUMP, STATE.FALL] and target_y > current_y:
             self.setWalkingState()
         # was jumping and hit ceiling
-        elif self.cur_state == STATE.JUMP:
-            self.setFallingState()
+        #elif self.cur_state == STATE.JUMP:
+        #    self.setFallingState()
 
     def collectItem(self, item_pos, level):
         x = item_pos[0]
@@ -1322,7 +1333,7 @@ class Player(Dynamic):
         self.score += item.getScore()
         
         #if the player got to a certain score, give one life to him
-        if self.score % 5000 == 0:
+        if self.score % 5000 == 0 and self.score > 0:
             self.giveLife()
 
         level.clearNode(x, y)
@@ -1347,7 +1358,7 @@ class Player(Dynamic):
         #reset tree inventory in case player leaves tree object
         self.inventory["tree"] = 0
         
-        collision = level.checkPlayerCollision(player_x, player_y, 20, 16)
+        collision = level.checkPlayerCollision(player_x, player_y, 16, 16)
         collision_type = collision[0]
         collider_pos = collision[1]
 
@@ -1363,7 +1374,7 @@ class Player(Dynamic):
     def updatePosition(self, player_x, player_y, level, screen_max_height):  
         # First, check collisions in the current position (without moving)
         self.processCollisionsInCurrentPosition(player_x, player_y, level)
-        
+        self.score = self.score - 1
         # Checks if the player walked into a pit
         walked_into_pit = (not level.isPlayerCollidingWithSolid(player_x, player_y + 1))
         if self.cur_state == STATE.WALK and walked_into_pit:

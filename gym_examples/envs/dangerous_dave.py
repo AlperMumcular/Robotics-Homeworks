@@ -15,7 +15,7 @@ class DangerousDaveEnv(gym.Env):
         # self._agent_location = np.array([0.0, 0.0]).astype(np.float32)
 
         # We have 5 actions, corresponding to "right", "up", "left", "down", "right", "idle"
-        self.action_space = spaces.Discrete(5)
+        self.action_space = spaces.Discrete(4)
 
         # env constructor variables
         self.render_mode = render_mode
@@ -61,7 +61,7 @@ class DangerousDaveEnv(gym.Env):
                 else:
                     self.matrix[y][x] = 0
 
-        self.observation_space = spaces.Box(low=0, high=self.matrix.shape[1] * 16, shape=(self.matrix.size + 2,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0, high=self.matrix.shape[1] * 16, shape=(self.matrix.size + 2,), dtype=np.int16)
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -93,7 +93,7 @@ class DangerousDaveEnv(gym.Env):
                 else:
                     self.matrix[y][x] = 0
 
-        observation = np.append(self.matrix.flatten(), [self.player_position_x,self.player_position_y])
+        observation = np.append(self.matrix.flatten(), [self.player_position_x,self.player_position_y]).astype(np.int16)
 
         info = dict()
 
@@ -124,10 +124,6 @@ class DangerousDaveEnv(gym.Env):
             self.GamePlayer.movementInput(key_map)
             # print(self.GamePlayer.getCurrentState(), self.GamePlayer.getDirectionX())
 
-        elif action == 4: # down
-            key_map = [0, 0, 0, 1]
-            self.GamePlayer.movementInput(key_map)
-            # print(self.GamePlayer.getCurrentState(), self.GamePlayer.getDirectionX())
         """  
         elif action == 5: # use jetpack
             if self.jetpack_ui == False and self.GamePlayer.inventory["jetpack"] > 0:
@@ -173,7 +169,7 @@ class DangerousDaveEnv(gym.Env):
                 else:
                     self.matrix[y][x] = 0
                     
-        observation = np.append(self.matrix.flatten(), [self.player_position_x,self.player_position_y])
+        observation = np.append(self.matrix.flatten(), [self.player_position_x,self.player_position_y]).astype(np.int16)
 
         newScore = self.GamePlayer.getScore()
         reward = newScore - oldScore
